@@ -20,7 +20,7 @@ use_cloud_creds = (
 )
 
 if use_cloud_creds:
-    creds_dict = json.loads(st.secrets["dialogflow"]["credentials"])
+    creds_dict = st.secrets["dialogflow"]["credentials"]
     credentials = service_account.Credentials.from_service_account_info(creds_dict)
     PROJECT_ID = st.secrets["dialogflow"]["project_id"]
 else:
