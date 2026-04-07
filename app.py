@@ -1,26 +1,31 @@
 import os
 import time
+import json
 import streamlit as st
 from google.cloud import dialogflow_v2 as dialogflow
+from google.oauth2 import service_account
 from google.protobuf.json_format import MessageToDict
 
 # ---------------------------------------------------------
-# 1. AUTHENTICATION
+# 1. AUTHENTICATION (STREAMLIT CLOUD SAFE)
 # ---------------------------------------------------------
-# Make sure this filename matches EXACTLY the JSON file in your folder
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "punchthemonkey-streamlit-key.json"
+if "dialogflow" in st.secrets:
+    creds_dict = json.loads(st.secrets["dialogflow"]["credentials"])
+    credentials = service_account.Credentials.from_service_account_info(creds_dict)
+    PROJECT_ID = st.secrets["dialogflow"]["project_id"]
+else:
+    # Local fallback for development
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "punchtgmonkey-streamlit-key.json"
+    credentials = None
+    PROJECT_ID = "punchthemonkey-bmtm"
 
-# ---------------------------------------------------------
-# 2. DIALOGFLOW SETUP
-# ---------------------------------------------------------
-PROJECT_ID = "punchthemonkey-bmtm"
+# Create Dialogflow session client
+session_client = dialogflow.SessionsClient(credentials=credentials)
 SESSION_ID = "streamlit-session"
-
-session_client = dialogflow.SessionsClient()
 session_path = session_client.session_path(PROJECT_ID, SESSION_ID)
 
 # ---------------------------------------------------------
-# 3. STREAMLIT PAGE SETUP
+# 2. STREAMLIT PAGE SETUP
 # ---------------------------------------------------------
 st.set_page_config(page_title="Punch The Monkey Chatbot", page_icon="🐒")
 
@@ -30,7 +35,7 @@ st.markdown(
     """
     <div style='padding:10px;background-color:#1e1e1e;border-radius:10px;
     margin-bottom:15px;color:#ccc;text-align:center;'>
-        <b>Welcome to PunchTheMonkey — Dialogflow Chatbot</b>
+        <b>Welcome to PunchTheMonkey — Your Dialogflow Chatbot</b>
     </div>
     """,
     unsafe_allow_html=True
@@ -50,7 +55,7 @@ PUNCH_AVATAR = "🐒"
 USER_AVATAR = "🧑"
 
 # ---------------------------------------------------------
-# 4. FUNCTION TO SEND MESSAGE TO DIALOGFLOW
+# 3. FUNCTION TO SEND MESSAGE TO DIALOGFLOW
 # ---------------------------------------------------------
 def send_to_dialogflow(text):
     text_input = dialogflow.TextInput(text=text, language_code="en")
@@ -59,12 +64,10 @@ def send_to_dialogflow(text):
     response = session_client.detect_intent(
         request={"session": session_path, "query_input": query_input}
     )
-
     return response
 
-
 # ---------------------------------------------------------
-# 5. DISPLAY CHAT HISTORY
+# 4. DISPLAY CHAT HISTORY
 # ---------------------------------------------------------
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"], avatar=msg["avatar"]):
@@ -79,7 +82,7 @@ for msg in st.session_state.messages:
         )
 
 # ---------------------------------------------------------
-# 6. USER INPUT
+# 5. USER INPUT
 # ---------------------------------------------------------
 user_input = st.chat_input("Say something to Punch...")
 
@@ -132,10 +135,8 @@ if user_input:
         )
 
     # ---------------------------------------------------------
-    # 7. DIAGNOSTIC PANEL (FIXED)
+    # 6. DIAGNOSTIC PANEL (FIXED)
     # ---------------------------------------------------------
     with st.expander("Show diagnostic info"):
-        # Convert the ENTIRE response protobuf, not query_result
         df_dict = MessageToDict(df_response._pb)
         st.json(df_dict)
-
