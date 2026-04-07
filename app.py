@@ -10,7 +10,16 @@ from google.protobuf.json_format import MessageToDict
 # ---------------------------------------------------------
 # 1. AUTHENTICATION (STREAMLIT CLOUD SAFE)
 # ---------------------------------------------------------
-if "dialogflow" in st.secrets:
+# ---------------------------------------------------------
+# 1. AUTHENTICATION (STREAMLIT CLOUD SAFE + LOCAL SAFE)
+# ---------------------------------------------------------
+use_cloud_creds = (
+    hasattr(st, "secrets")
+    and "dialogflow" in st.secrets
+    and st.secrets["dialogflow"].get("credentials")
+)
+
+if use_cloud_creds:
     creds_dict = json.loads(st.secrets["dialogflow"]["credentials"])
     credentials = service_account.Credentials.from_service_account_info(creds_dict)
     PROJECT_ID = st.secrets["dialogflow"]["project_id"]
