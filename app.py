@@ -16,7 +16,7 @@ from google.protobuf.json_format import MessageToDict
 use_cloud_creds = (
     hasattr(st, "secrets")
     and "dialogflow" in st.secrets
-    and st.secrets["dialogflow"].get("credentials")
+    and "credentials" in st.secrets["dialogflow"]
 )
 
 if use_cloud_creds:
@@ -24,9 +24,9 @@ if use_cloud_creds:
     credentials = service_account.Credentials.from_service_account_info(creds_dict)
     PROJECT_ID = st.secrets["dialogflow"]["project_id"]
 else:
-    # Local fallback for development
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "punchthemonkey-streamlit-key.json"
-    credentials = None
+    credentials = service_account.Credentials.from_service_account_file(
+        "punchthemonkey-streamlit-key.json"
+    )
     PROJECT_ID = "punchthemonkey-bmtm"
 
 # Create Dialogflow session client
