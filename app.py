@@ -98,7 +98,7 @@ if user_input:
 
     with st.chat_message("user", avatar=USER_AVATAR):
         st.markdown(
-            f"""
+            """
             <div style='background-color:#2b2b2b;padding:10px;border-radius:10px;
             max-width:70%;margin-bottom:5px;color:white;'>
                 {user_input}
