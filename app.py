@@ -1,22 +1,7 @@
 import os
 import time
 import json
-
-from google.oauth2 import service_account
-
 import streamlit as st
-
-if "dialogflow" in st.secrets:
-    creds_dict = json.loads(st.secrets["dialogflow"]["credentials"])
-    credentials = service_account.Credentials.from_service_account_info(creds_dict)
-    PROJECT_ID = st.secrets["dialogflow"]["project_id"]
-else:
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "punchtgmonkey-streamlit-key.json"
-    credentials = None
-    PROJECT_ID = "punchthemonkey-bmtm"
-
-session_client = dialogflow.SessionsClient(credentials=credentials)
-session_path = session_client.session_path(PROJECT_ID, SESSION_ID)
 
 from google.cloud import dialogflow_v2 as dialogflow
 from google.oauth2 import service_account
@@ -31,7 +16,7 @@ if "dialogflow" in st.secrets:
     PROJECT_ID = st.secrets["dialogflow"]["project_id"]
 else:
     # Local fallback for development
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "punchtgmonkey-streamlit-key.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "punchthemonkey-streamlit-key.json"
     credentials = None
     PROJECT_ID = "punchthemonkey-bmtm"
 
